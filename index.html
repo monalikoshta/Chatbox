@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+    </head>
+    <body>
+        <h2 id='head'>ChatBox</h2>
+        <div id="container-msg">
+
+        </div>
+        <br>
+        <div class="send-msg">
+            <form id='myForm'>
+                Username:<input type='text' name='name' id='name' disabled><br><br>
+                Message:&nbsp&nbsp<input type='text' name='msg' id='msg'><br><br>
+                <button onclick='send()' type='button'>Send</button>
+            </form>
+        </div>
+    </body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+
+    <script>
+        
+        var socket = io.connect();
+        
+        socket.on('new message', function(data){
+                //console.log(data1)
+                var user = document.getElementById('container-msg').innerHTML
+                user+="<p><b>"+data.name+":</b><br>"+data.msg+"</p>"
+                document.getElementById('container-msg').innerHTML=user      
+            });
+
+        socket.on('new user', function(data){
+                //console.log(data1)
+                var data1 = document.getElementById('container-msg').innerHTML
+                data1+="<p class='join'><i>"+data.name+" joined the chat</i></p>"
+                document.getElementById('container-msg').innerHTML=data1     
+            });
+        
+        function send(){
+            var name = document.getElementById('name').value
+            var msg = document.getElementById('msg').value
+            var data1 = document.getElementById('container-msg').innerHTML
+            socket.emit('sending message',{
+                name:name,
+                msg:msg
+            })
+
+            // data1+="<p class='send'><b>"+name+":</b><br>"+msg+"</p>"
+            // document.getElementById('container-msg').innerHTML=data1
+
+            socket.on('new message', function(data){
+                //console.log(data1)
+                data1+="<p><b>"+data.name+": </b><br>"+data.msg+"</p>"
+                document.getElementById('container-msg').innerHTML=data1
+                //console.log(data1)               
+            });
+
+            socket.on('new user', function(data){
+                //console.log(data1)
+                // var data1 = document.getElementById('container-msg').innerHTML
+                data1+="<p class='join'><i>"+data.name+" joined the chat</i></p>"
+                document.getElementById('container-msg').innerHTML=data1     
+            })
+
+            socket.on('disconnect', function(data){
+                //console.log(data1)
+                // var data1 = document.getElementById('container-msg').innerHTML
+                data1+="<p class='join'><i>"+data.name+" left the chat</i></p>"
+                document.getElementById('container-msg').innerHTML=data1     
+            })
+
+       }
+
+
+        function myName() {
+            var person = prompt("Please enter your name", "Username");
+            if (person != null) {
+                document.getElementById("name").value = person ;
+                socket.emit('new user',{
+                    name:person
+                    })
+                }
+            }
+            
+        myName()
+        
+    </script>
+</html>
